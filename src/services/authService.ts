@@ -1,30 +1,93 @@
-import { fetchAPI } from "./api";
+// services/authService.ts
+const API_URL = "https://backend-vehiculos-production.up.railway.app";
 
-const API_URL = '/auth/';
-
-const login = async (username: string, password: string) => {
-    const response = await fetchAPI(API_URL + 'login', {
+export const authService = {
+  async login(email: string, password: string) {
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
-        body: JSON.stringify({ username, password })
-    });
-    if (response.accessToken) {
-        localStorage.setItem('user', JSON.stringify(response));
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Credenciales incorrectas');
+      }
+
+      const data = await response.json();
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('email', data.email);
+      return data;
+    } catch (error) {
+      throw error instanceof Error ? error : new Error('Error desconocido al iniciar sesión');
     }
-    return response;
-};
+  },
 
-const logout = () => {
-    localStorage.removeItem('user');
-};
+  async register(nombres: string, apellidos: string, email: string, password: string) {
+    try {
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombres, apellidos, email, password }),
+      });
 
-const getCurrentUser = () => {
-    return JSON.parse(localStorage.getItem('user') || '{}');
-};
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al registrar');
+      }
 
-const authService = {
-    login,
-    logout,
-    getCurrentUser,
-};
+      return await response.json();
+    } catch (error) {
+      throw error instanceof Error ? error : new Error('Error desconocido al registrar');
+    }
+  },
 
-export default authService;
+  async getProfile() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No hay sesión activa');
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/auth/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('email');
+          window.location.href = '/login';
+          throw new Error('Sesión expirada');
+        }
+        throw new Error('Error al obtener el perfil');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw error instanceof Error ? error : new Error('Error desconocido al obtener el perfil');
+    }
+  },
+
+  logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('email');
+    window.location.href = '/login';
+  },
+
+  isAuthenticated() {
+    return !!localStorage.getItem('token');
+  },
+
+  getRoles() {
+    const token = localStorage.getItem('token');
+    if (!token) return [];
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.roles || [];
+    } catch {
+      return [];
+    }
+  },
+};
