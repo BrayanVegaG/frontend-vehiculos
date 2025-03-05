@@ -16,20 +16,20 @@ export const Register: React.FC = () => {
   const navigate = useNavigate();
 
   const handleRegister = async () => {
-    if (!/^[a-zA-ZÀ-ÿ]+(\s[a-zA-ZÀ-ÿ]+)*$/.test(nombres)) {
+    if (!/^[a-zA-ZÀ-ÿ]+(\s[a-zA-ZÀ-ÿ]+)+$/.test(nombres)) {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: 'Ingrese al menos un nombre válido.',
+        detail: 'Ingrese al menos dos nombres válidos sin números.',
         life: 3000,
       });
       return;
     }
-    if (!/^[a-zA-ZÀ-ÿ]+(\s[a-zA-ZÀ-ÿ]+)*$/.test(apellidos)) {
+    if (!/^[a-zA-ZÀ-ÿ]+(\s[a-zA-ZÀ-ÿ]+)+$/.test(apellidos)) {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: 'Ingrese al menos un apellido válido.',
+        detail: 'Ingrese al menos dos apellidos válidos sin números.',
         life: 3000,
       });
       return;
