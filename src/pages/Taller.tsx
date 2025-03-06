@@ -138,7 +138,7 @@ export const Talleres: React.FC = () => {
       });
       loadTalleres();
     } catch (error) {
-      toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error al eliminar el taller', life: 3000 });
+      toast.current?.show({ severity: 'error', summary: 'Error', detail: error instanceof Error ? error.message : 'Error al eliminar el vehículo', life: 3000 });
     }
   };
 

@@ -21,6 +21,10 @@ const fetchAPI = async (url: string, options: RequestInit = {}) => {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Error en la solicitud');
   }
+    // Si la respuesta es 204 No Content, no intentamos parsear JSON
+    if (response.status === 204) {
+      return; // Devolvemos undefined para indicar que no hay cuerpo
+    }
 
   return response.json();
 };

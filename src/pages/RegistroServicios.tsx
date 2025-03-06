@@ -23,9 +23,7 @@ export const RegistroServicios: React.FC = () => {
   const toast = useRef<Toast>(null);
   const [displayDialog, setDisplayDialog] = useState(false);
   const [displayDetailsDialog, setDisplayDetailsDialog] = useState(false);
-  const [editingRegistroServicio, setEditingRegistroServicio] = useState<Partial<RegistroServicio & { fechaServicio: Date | undefined }>>({
-    fechaServicio: undefined,
-  });
+  const [editingRegistroServicio, setEditingRegistroServicio] = useState<Partial<RegistroServicio>>({});
   const [selectedRegistroServicio, setSelectedRegistroServicio] = useState<RegistroServicio | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
@@ -187,7 +185,7 @@ export const RegistroServicios: React.FC = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: 'Error al eliminar el registro de servicio',
+         detail: error instanceof Error ? error.message : 'Error al eliminar el vehículo',
         life: 3000,
       });
     }
@@ -268,13 +266,16 @@ export const RegistroServicios: React.FC = () => {
           <div className="p-field">
             <label htmlFor="fechaServicio">Fecha de Servicio: </label>
             <Calendar
-              id="fechaServicio"
-              value={editingRegistroServicio.fechaServicio || undefined}
-              onChange={(e) => setEditingRegistroServicio({ ...editingRegistroServicio, fechaServicio: e.value || undefined })}
-              required
-              className={submitted && !editingRegistroServicio.fechaServicio ? 'p-invalid' : ''}
-              dateFormat="dd/mm/yy"
-            />
+            id="fechaServicio"
+            value={editingRegistroServicio.fechaServicio ? new Date(editingRegistroServicio.fechaServicio) : undefined}
+            onChange={(e) => setEditingRegistroServicio({
+              ...editingRegistroServicio,
+              fechaServicio: e.value instanceof Date ? e.value.toISOString() : undefined
+            })}
+            required
+            className={submitted && !editingRegistroServicio.fechaServicio ? 'p-invalid' : ''}
+            dateFormat="dd/mm/yy"
+          />
             {submitted && !editingRegistroServicio.fechaServicio && (
               <small className="p-error">Fecha de Servicio es requerida.</small>
             )}
@@ -364,22 +365,27 @@ export const RegistroServicios: React.FC = () => {
           </div>
           <br />
           <div className="p-field">
-            <label htmlFor="documentos">Documentos: </label>
-            <FileUpload
-              name="file"
-              url="http://localhost:3000/upload"
-              multiple
-              accept="image/*,application/pdf"
-              maxFileSize={10000000}
-              onUpload={(e) =>
+          <label htmlFor="documentos">Documentos: </label>
+          <FileUpload
+            name="file"
+            multiple={false}
+            accept="image/*,application/pdf"
+            maxFileSize={10000000}
+            onSelect={(e) => {
+              if (e.files && e.files.length > 0) {
+                const fileName = e.files[0].name;
                 setEditingRegistroServicio({
                   ...editingRegistroServicio,
-                  documentos: e.files.map((file: any) => file.response.path).join(','),
-                })
+                  documentos: fileName,
+                });
               }
-            />
-          </div>
-          <br />
+            }}
+            chooseLabel="Seleccionar archivo"
+            uploadLabel="Cargar"
+            cancelLabel="Cancelar"
+          />
+        </div>
+        <br />
         </Dialog>
       )}
 
@@ -396,9 +402,13 @@ export const RegistroServicios: React.FC = () => {
               <InputText id="id" value={selectedRegistroServicio.id.toString()} disabled />
             </div>
             <div className="p-field">
-              <label htmlFor="fechaServicio">Fecha de Servicio: </label>
-              <InputText id="fechaServicio" value={formatDate(selectedRegistroServicio.fechaServicio)} disabled />
-            </div>
+            <label htmlFor="fechaServicio">Fecha de Servicio: </label>
+            <InputText
+              id="fechaServicio"
+              value={selectedRegistroServicio ? formatDate(selectedRegistroServicio.fechaServicio) : ''}
+              disabled
+            />
+          </div>
             <div className="p-field">
               <label htmlFor="descripcion">Descripción: </label>
               <InputText id="descripcion" value={selectedRegistroServicio.descripcion} disabled />
@@ -430,19 +440,7 @@ export const RegistroServicios: React.FC = () => {
             <div className="p-field">
               <label htmlFor="documentos">Documentos: </label>
               {selectedRegistroServicio.documentos ? (
-                <>
-                  {selectedRegistroServicio.documentos.match(/\.(jpeg|jpg|gif|png)$/) ? (
-                    <img
-                      src={selectedRegistroServicio.documentos}
-                      alt="Documento"
-                      style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '5px' }}
-                    />
-                  ) : (
-                    <a href={selectedRegistroServicio.documentos} target="_blank" rel="noopener noreferrer">
-                      Descargar documento
-                    </a>
-                  )}
-                </>
+                <span>{selectedRegistroServicio.documentos}</span>
               ) : (
                 <span>No hay documentos</span>
               )}

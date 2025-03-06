@@ -20,7 +20,7 @@ export const Register: React.FC = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: 'Ingrese al menos dos nombres válidos sin números.',
+        detail: 'Debe ingresar dos nombres separados por un espacio',
         life: 3000,
       });
       return;
@@ -53,7 +53,7 @@ export const Register: React.FC = () => {
         detail: 'Registro exitoso, por favor inicia sesión.',
         life: 3000,
       });
-      navigate('/login');
+      navigate('/auth/login');
     } catch (error) {
       toast.current?.show({
         severity: 'error',
@@ -114,7 +114,6 @@ export const Register: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Mínimo 5 caracteres"
               toggleMask
-              feedback={false}
               className="p-inputtext-lg w-full"
             />
           </div>
@@ -130,7 +129,7 @@ export const Register: React.FC = () => {
 
         <div className="text-center mt-4">
           <span className="text-gray-600">¿Ya tienes una cuenta? </span>
-          <Button label="Inicia Sesión" className="p-button-text text-blue-500" onClick={() => navigate('/login')} />
+          <Button label="Inicia Sesión" className="p-button-text text-blue-500" onClick={() => navigate('/auth/login')} />
         </div>
       </div>
     </div>
